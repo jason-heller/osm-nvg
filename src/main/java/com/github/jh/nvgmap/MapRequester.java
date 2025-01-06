@@ -27,11 +27,11 @@ public class MapRequester {
     public MapRequester() {
     }
 
-    public MapData request()
+    public MapData retrieveMapData()
     {
-        return request(buildQuery());
+        return retrieveMapData(buildQuery());
     }
-    public MapData request(String query) {
+    public MapData retrieveMapData(String query) {
         MapData mapData = null;
 
         try {
@@ -54,8 +54,13 @@ public class MapRequester {
             inputStream.close();
 
         } catch (IOException | URISyntaxException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return null;
         }
+
+        if (mapData == null)
+            System.err.println("Failed to query OpenStreetMap.");
+
         return mapData;
     }
 
@@ -261,7 +266,7 @@ public class MapRequester {
         return this;
     }
 
-    public MapRequester addQuery(String query) {
+    public MapRequester query(String query) {
         queries.add(query);
         return this;
     }

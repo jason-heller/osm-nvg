@@ -1,4 +1,4 @@
-package com.github.jh.nvgmap;
+package com.github.jh.nvgmap.nvg;
 
 import com.github.jh.nvgmap.components.Way;
 import com.github.jh.nvgmap.gfx.LineStyle;
@@ -15,10 +15,13 @@ public class NVGPath implements NVGDrawable {
 
     private Way way;
 
-    public NVGPath(Way way, WaySchema schema, NVGPoint[] points) {
+    private float scale;
+
+    public NVGPath(Way way, WaySchema schema, NVGPoint[] points, float scale) {
         this.way = way;
         this.schema = schema;
         this.points = points;
+        this.scale = scale;
 
         LineStyle lineStyle = schema.getLineStyle();
 
@@ -103,11 +106,11 @@ public class NVGPath implements NVGDrawable {
 
     private void drawStroke(long ctx) {
         NanoVG.nvgStrokeColor(ctx, schema.getBorderColor());
-        NanoVG.nvgStrokeWidth(ctx, schema.getWidth());
+        NanoVG.nvgStrokeWidth(ctx, schema.getWidth() * scale);
         NanoVG.nvgStroke(ctx);
 
         NanoVG.nvgStrokeColor(ctx, schema.getFillColor());
-        NanoVG.nvgStrokeWidth(ctx, schema.getWidth() - 1f);
+        NanoVG.nvgStrokeWidth(ctx, schema.getWidth() * scale - 1f);
         NanoVG.nvgStroke(ctx);
     }
 

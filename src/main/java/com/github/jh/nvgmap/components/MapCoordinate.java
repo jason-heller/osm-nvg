@@ -1,8 +1,7 @@
 package com.github.jh.nvgmap.components;
 
 import com.github.jh.nvgmap.MapRegion;
-import com.github.jh.nvgmap.NVGMap;
-import com.github.jh.nvgmap.NVGPoint;
+import com.github.jh.nvgmap.nvg.NVGPoint;
 
 public record MapCoordinate(double latitude, double longitude) {
 

@@ -1,5 +1,5 @@
-import com.github.jh.nvgmap.MapRegion;
-import com.github.jh.nvgmap.NVGMap;
+import com.github.jh.nvgmap.*;
+import com.github.jh.nvgmap.nvg.NVGMap;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.nanovg.NanoVG;
@@ -8,6 +8,8 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
 import java.nio.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -21,21 +23,32 @@ public class HelloWorld {
     private long window;
 
     private long ctx;
-    private NVGMap map1, map2;
+    private NVGMap map;
+
+    private CompletableFuture<MapData> future;
 
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
-        map1 = new NVGMap(25,25,800,600);
-        map2 = new NVGMap(450,25,0,0);
-
-        MapRegion mapRegion = new MapRegion(41.05764, -73.92198, 41.08585, -73.85460);
-
-        map1.setMapRegion(mapRegion);
-        map2.setMapRegion(mapRegion);
-
         init();
+
+        map = new NVGMap(ctx, 0,0,400,400);
+        map.setState(MapState.WAITING);
+
+        future = CompletableFuture.supplyAsync(() -> {
+            MapRegion mapRegion = new MapRegion(41.05764, -73.92198, 41.08585, -73.85460);
+            MapRequester requester = new MapRequester()
+                    .setMapRegion(mapRegion)
+                    .query("way->.ways;\n" +
+                            "rel[type=multipolygon]->.polys;\n" +
+                            "(.ways; .polys;)");
+
+            return requester.retrieveMapData();
+        });
+
         loop();
+
+        map.dispose(ctx);
 
         NanoVGGL3.nvgDelete(ctx);
 
@@ -115,9 +128,17 @@ public class HelloWorld {
         while ( !glfwWindowShouldClose(window) ) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
+            if (future.isDone()) {
+                try {
+                    MapData mapData = future.get();
+                    map.create(mapData);
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
             NanoVG.nvgBeginFrame(ctx, 800, 600, 1);
-            map1.draw(ctx);
-            map2.draw(ctx);
+            map.draw(ctx);
             NanoVG.nvgEndFrame(ctx);
 
             glfwSwapBuffers(window); // swap the color buffers
