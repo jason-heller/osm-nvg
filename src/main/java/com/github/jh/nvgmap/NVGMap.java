@@ -15,6 +15,7 @@ import java.util.TreeMap;
 public class NVGMap {
 
     private int x, y, width, height;
+    private double xScale, yScale;
     private MapSchema mapSchema = new OSMSchema();
 
     private MapData mapData = null;
@@ -36,8 +37,6 @@ public class NVGMap {
 
     public void setMapRegion(MapRegion mapRegion) {
 
-        mapRegion.shift(-.08,0.0);
-
         MapRequester requester = new MapRequester()
                 .setTimeout(25)
                 .setMapRegion(mapRegion)
@@ -51,6 +50,13 @@ public class NVGMap {
         if (mapData == null) {
             return;
         }
+
+        MapRegion region = mapData.getRegion();
+        double latitudeSpan = region.getEast() - region.getWest();
+        double longitudeSpan = region.getNorth() - region.getSouth();
+
+        xScale = latitudeSpan / width;
+        yScale = longitudeSpan / height;
 
         // Grab graphical contents
         Map<Integer, List<Way>> wayMap = (HashMap<Integer, List<Way>>) mapData.getWays();

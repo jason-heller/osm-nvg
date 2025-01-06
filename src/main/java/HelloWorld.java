@@ -26,8 +26,8 @@ public class HelloWorld {
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
-        map1 = new NVGMap(25,25,400,400);
-        map2 = new NVGMap(450,25,200,100);
+        map1 = new NVGMap(25,25,800,600);
+        map2 = new NVGMap(450,25,0,0);
 
         MapRegion mapRegion = new MapRegion(41.05764, -73.92198, 41.08585, -73.85460);
 

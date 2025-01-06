@@ -22,6 +22,10 @@ public class MapData {
         wayList.add(way);
     }
 
+    public MapRegion getRegion() {
+        return mapRegion;
+    }
+
     public Map<Integer, List<Way>> getWays()
     {
         return ways;
