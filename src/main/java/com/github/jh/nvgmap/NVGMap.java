@@ -29,12 +29,12 @@ public class NVGMap {
         this.height = height;
     }
 
-    public void createMap(double south, double west, double north, double east) {
+    /*public void setMapRegion(double south, double west, double north, double east) {
         mapRegion = new MapRegion(south, west, north, east);
-        createMap(mapRegion);
-    }
+        setMapRegion(mapRegion);
+    }*/
 
-    public void createMap(MapRegion mapRegion) {
+    public void setMapRegion(MapRegion mapRegion) {
 
         mapRegion.shift(-.08,0.0);
 

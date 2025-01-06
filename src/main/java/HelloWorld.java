@@ -1,3 +1,4 @@
+import com.github.jh.nvgmap.MapRegion;
 import com.github.jh.nvgmap.NVGMap;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
@@ -20,13 +21,18 @@ public class HelloWorld {
     private long window;
 
     private long ctx;
-    private NVGMap map;
+    private NVGMap map1, map2;
 
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
-        map = new NVGMap(25,25,750,550);
-        map.createMap(41.05764, -73.92198, 41.08585, -73.85460);
+        map1 = new NVGMap(25,25,400,400);
+        map2 = new NVGMap(450,25,200,100);
+
+        MapRegion mapRegion = new MapRegion(41.05764, -73.92198, 41.08585, -73.85460);
+
+        map1.setMapRegion(mapRegion);
+        map2.setMapRegion(mapRegion);
 
         init();
         loop();
@@ -110,7 +116,8 @@ public class HelloWorld {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
             NanoVG.nvgBeginFrame(ctx, 800, 600, 1);
-            map.draw(ctx);
+            map1.draw(ctx);
+            map2.draw(ctx);
             NanoVG.nvgEndFrame(ctx);
 
             glfwSwapBuffers(window); // swap the color buffers
