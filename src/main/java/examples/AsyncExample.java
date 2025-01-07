@@ -102,7 +102,7 @@ public class AsyncExample {
         while ( !glfwWindowShouldClose(window) ) {
 
             // Poll to see if the map data has been received
-            if (future.isDone()) {
+            if (map.getMapData() == null && future.isDone()) {
                 try {
                     MapData mapData = future.get();
                     map.create(mapData);
