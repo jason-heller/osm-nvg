@@ -12,5 +12,3 @@ Please note not all OpenStreetMap elements are implemented yet. Some map feature
 - [LWJGL3](https://www.lwjgl.org/)
 - [Json-simple](https://code.google.com/archive/p/json-simple/)
 - [NanoVG](https://github.com/memononen/nanovg) (Can be downloaded with [LWJGL3](https://www.lwjgl.org/customize))
-
--  
