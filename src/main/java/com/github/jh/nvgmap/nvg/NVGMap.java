@@ -8,8 +8,6 @@ import com.github.jh.nvgmap.components.Way;
 import com.github.jh.nvgmap.gfx.MapSchema;
 import com.github.jh.nvgmap.gfx.OSMSchema;
 import com.github.jh.nvgmap.gfx.WaySchema;
-import com.github.jh.nvgmap.nvg.NVGPath;
-import com.github.jh.nvgmap.nvg.NVGPoint;
 import org.lwjgl.nanovg.NanoVG;
 
 import java.util.HashMap;
@@ -45,6 +43,15 @@ public class NVGMap {
         failImage = new NVGImage(ctx, x + iconX, y + iconY, "src/main/resources/map_fail.png");
     }
 
+    /**
+     * Creates a map using the given latitude and longitude boundaries. Intended as a convenient way to
+     * quickly query and get a map for use. Will set map to a fail state if unable to query the OSM api.
+     *
+     * @param south The southern longitudinal boundary of the map
+     * @param west The western latitudinal boundary of the map
+     * @param north The northern longitudinal boundary of the map
+     * @param east The eastern latitudinal boundary of the map
+     */
     public void create(double south, double west, double north, double east) {
         mapRegion = new MapRegion(south, west, north, east);
         MapRequester requester = new MapRequester()
@@ -58,15 +65,23 @@ public class NVGMap {
 
         if (mapData == null) {
             System.err.println("Failed to query OpenStreetMap.");
+            setState(MapState.FAILED);
             return;
         }
 
         create(mapData);
     }
 
+    /**
+     * Creates a map using the given MapData, generally created from a MapRequester object.
+     * Will set map to a fail state if unable to query the OSM api.
+     *
+     * @param mapData The map data to use for this map.
+     */
     public void create(MapData mapData) {
 
         if (mapData == null) {
+            System.err.println("Failed to query OpenStreetMap.");
             setState(MapState.FAILED);
             return;
         }
@@ -111,6 +126,11 @@ public class NVGMap {
         setState(MapState.ACTIVE);
     }
 
+    /**
+     * Renders the map. Make sure to put this with your other NVG render calls.
+     *
+     * @param ctx The handle for the NanoVG context
+     */
     public void draw(long ctx) {
 
         NanoVG.nvgScissor(ctx, x, y, width, height);
@@ -146,7 +166,15 @@ public class NVGMap {
         NanoVG.nvgResetScissor(ctx);
     }
 
-    public void resize(int x, int y, int width, int height) {
+    /**
+     * Sets the map's position and size.
+     *
+     * @param x The map's X position in pixels
+     * @param y The map's Y position in pixels
+     * @param width The map's width in pixels
+     * @param height The map's height in pixels
+     */
+    public void setBoundary(int x, int y, int width, int height) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -175,10 +203,21 @@ public class NVGMap {
         return height;
     }
 
+    /**
+     * Sets the maps state. Used to indicate how the map should display
+     * within the window.
+     *
+     * @param mapState the state of the map
+     */
     public void setState(MapState mapState) {
         this.mapState = mapState;
     }
 
+    /**
+     * Frees resources created by the map. Should be called before terminating the program.
+     *
+     * @param ctx The handle for the NanoVG context
+     */
     public void dispose(long ctx) {
         waitingImage.dispose(ctx);
         failImage.dispose(ctx);
