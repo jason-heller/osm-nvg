@@ -6,7 +6,6 @@ Please note not all OpenStreetMap elements are implemented yet. Some map feature
 # Screenshots
 
 ![nyc](https://github.com/user-attachments/assets/6205b3db-cba0-466e-b296-a07e17eac97e)
-![nj](https://github.com/user-attachments/assets/16b51751-61e8-4d1b-8e5c-2f7f9a955933)
 
 
 # Required Libraries
