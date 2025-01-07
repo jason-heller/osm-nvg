@@ -3,6 +3,7 @@ package com.github.jh.nvgmap.nvg;
 import com.github.jh.nvgmap.components.Way;
 import com.github.jh.nvgmap.gfx.LineStyle;
 import com.github.jh.nvgmap.gfx.WaySchema;
+import org.lwjgl.nanovg.NVGColor;
 import org.lwjgl.nanovg.NanoVG;
 
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ public class NVGPath implements NVGDrawable {
     private final WaySchema schema;
 
     private Way way;
+    private int secondaryPtIndex = -1;
 
     private float scale;
 
@@ -21,7 +23,7 @@ public class NVGPath implements NVGDrawable {
         this.way = way;
         this.schema = schema;
         this.points = points;
-        this.scale = scale;
+        this.scale = (float)Math.min(scale, 1f);
 
         LineStyle lineStyle = schema.getLineStyle();
 
@@ -66,6 +68,13 @@ public class NVGPath implements NVGDrawable {
                 }
             }
 
+            if (lineStyle == LineStyle.DASH_SOLID) {
+                secondaryPtIndex = newPoints.size();
+
+                for(int i = 0; i < nCoords; i++)
+                    newPoints.add(points[i]);
+            }
+
             this.points = new NVGPoint[newPoints.size()];
             newPoints.toArray(this.points);
         }
@@ -82,16 +91,26 @@ public class NVGPath implements NVGDrawable {
     }
 
     private void drawLine(long ctx) {
-        int nCoords = points.length;
+        final NVGColor border = schema.getPrimaryColor();
+        final NVGColor fill = schema.getSecondaryColor();
 
+        if (secondaryPtIndex > 0) {
+            drawSegment(ctx, secondaryPtIndex, points.length, fill, fill);
+            drawSegment(ctx, 0, secondaryPtIndex, fill, border);
+        } else {
+            drawSegment(ctx, 0, points.length, fill, border);
+        }
+    }
+
+    private void drawSegment(long ctx, int start, int length, NVGColor fillColor, NVGColor borderColor) {
         NanoVG.nvgBeginPath(ctx);
-        NanoVG.nvgMoveTo(ctx, points[0].x(), points[0].y());
+        NanoVG.nvgMoveTo(ctx, points[start].x(), points[start].y());
 
-        for(int i = 1; i < nCoords; i++) {
+        for(int i = start + 1; i < length; i++) {
             if (schema.getLineStyle().isSegmented()) {
 
                 if (i % 2 == 0) {
-                    drawStroke(ctx);
+                    drawStroke(ctx, fillColor, borderColor);
                     NanoVG.nvgBeginPath(ctx);
                     NanoVG.nvgMoveTo(ctx, points[i].x(), points[i].y());
                 }
@@ -101,15 +120,15 @@ public class NVGPath implements NVGDrawable {
 
         }
 
-        drawStroke(ctx);
+        drawStroke(ctx, fillColor, borderColor);
     }
 
-    private void drawStroke(long ctx) {
-        NanoVG.nvgStrokeColor(ctx, schema.getBorderColor());
+    private void drawStroke(long ctx, NVGColor fillColor, NVGColor borderColor) {
+        NanoVG.nvgStrokeColor(ctx, fillColor);
         NanoVG.nvgStrokeWidth(ctx, schema.getWidth() * scale);
         NanoVG.nvgStroke(ctx);
 
-        NanoVG.nvgStrokeColor(ctx, schema.getFillColor());
+        NanoVG.nvgStrokeColor(ctx, borderColor);
         NanoVG.nvgStrokeWidth(ctx, schema.getWidth() * scale - 1f);
         NanoVG.nvgStroke(ctx);
     }
@@ -125,7 +144,7 @@ public class NVGPath implements NVGDrawable {
         }
 
         NanoVG.nvgClosePath(ctx);
-        NanoVG.nvgFillColor(ctx, schema.getFillColor());
+        NanoVG.nvgFillColor(ctx, schema.getPrimaryColor());
         NanoVG.nvgFill(ctx);
     }
 }

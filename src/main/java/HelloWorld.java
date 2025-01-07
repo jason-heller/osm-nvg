@@ -32,11 +32,13 @@ public class HelloWorld {
 
         init();
 
-        map = new NVGMap(ctx, 0,0,400,400);
+        map = new NVGMap(ctx, 0,0,800,600);
         map.setState(MapState.WAITING);
 
         future = CompletableFuture.supplyAsync(() -> {
-            MapRegion mapRegion = new MapRegion(41.05764, -73.92198, 41.08585, -73.85460);
+            //MapRegion mapRegion = new MapRegion(41.05764, -73.92198, 41.08585, -73.85460);
+            MapRegion mapRegion = new MapRegion(40.77593, -73.97957, 40.79009, -73.94588);
+
             MapRequester requester = new MapRequester()
                     .setMapRegion(mapRegion)
                     .query("way->.ways;\n" +

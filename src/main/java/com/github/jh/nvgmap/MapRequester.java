@@ -154,6 +154,16 @@ public class MapRequester {
 
         String layerTag = (String) tags.get("layer");
 
+        // Sometimes 'level' is incorrectly used in place of 'layer' in OSM
+        // We check this tag to account for this common error
+        if (layerTag == null) {
+            layerTag = (String) tags.get("level");
+            if (layerTag != null && layerTag.contains(";")) {
+                String[] levels = layerTag.split(";");
+                layerTag = levels[levels.length - 1];
+            }
+        }
+
         int layer = (layerTag == null) ? 0 : Integer.parseInt(layerTag);
 
         Iterator iter = geomArray.iterator();
@@ -176,7 +186,9 @@ public class MapRequester {
         if (wayType == null)
             return null;
 
+        layer *= 100000; // Ensure layer is more significant than z-order of nodes
         layer += wayType.getPriority();
+
         return new Way(name, wayType, coords, layer);
     }
 
@@ -185,6 +197,7 @@ public class MapRequester {
 
         String naturalTag = (String)tags.get("natural");
 
+        // Natural areas
         if (naturalTag != null) {
             wayType = switch (naturalTag) {
                 case "wetland" -> WayType.WETLAND;
@@ -198,33 +211,77 @@ public class MapRequester {
                 System.out.println("Ignored natural tag: " + naturalTag);
         }
 
-        if (wayType == null) {
-            String wayTypeTag = (String)tags.get("highway");
+        String landuseTag = (String)tags.get("landuse");
+        if (landuseTag != null) {
+            wayType = switch (landuseTag) {
+                case "commercial" -> WayType.COMMERCIAL_ZONING;
+                case "construction" -> WayType.CONSTRUCTION_ZONING;
+                case "education" -> WayType.EDUCATION_ZONING;
+                case "industrial" -> WayType.INDUSTRIAL_ZONING;
+                case "residential" -> WayType.RESIDENTIAL_ZONING;
+                case "retail" -> WayType.RETAIL_ZONING;
 
-            if (wayTypeTag == null)
-                wayTypeTag = (String)tags.get("railway");
+                case "farmland" -> WayType.FARMLAND;
+                case "farmyard" -> WayType.FARMYARD;
+                case "forest" -> WayType.WOOD;
 
-            if (wayTypeTag == null)
-                wayTypeTag = (String)tags.get("power");
+                case "grass" -> WayType.GARDEN_ZONING;
 
-            if (wayTypeTag == null)
-                wayTypeTag = (String)tags.get("waterway");
+                case "basin" -> WayType.RIVER;
+                default -> wayType;
+            };
 
-            if (wayTypeTag != null) {
-                for (WayType h : WayType.values()) {
-                    if (h.name().equals(wayTypeTag.toUpperCase())) {
-                        wayType = h;
-                        break;
-                    }
+            if (wayType == null)
+                System.out.println("Ignored landuse tag: " + naturalTag);
+        }
+
+        if (wayType != null)
+            return wayType;
+
+        String leisureTag = (String)tags.get("leisure");
+
+        if (leisureTag != null) {
+            wayType = switch (leisureTag) {
+                case "park" -> WayType.PARK_ZONING;
+                case "garden" -> WayType.GARDEN_ZONING;
+                case "swimming pool" -> WayType.SWIMMING_POOL_ZONING;
+                default -> wayType;
+            };
+        }
+
+        if (wayType != null)
+            return wayType;
+
+        String buildingTag = (String)tags.get("building");
+        if (buildingTag != null) {
+            return WayType.BUILDING;
+        }
+
+        String wayTypeTag = (String)tags.get("highway");
+
+        if (wayTypeTag == null)
+            wayTypeTag = (String)tags.get("railway");
+
+        if (wayTypeTag == null)
+            wayTypeTag = (String)tags.get("power");
+
+        if (wayTypeTag == null)
+            wayTypeTag = (String)tags.get("waterway");
+
+        if (wayTypeTag != null) {
+            for (WayType h : WayType.values()) {
+                if (h.name().equals(wayTypeTag.toUpperCase())) {
+                    wayType = h;
+                    break;
                 }
             }
-
-            /*if (wayTypeTag == null) {
-                for(Object key : tags.keySet()) {
-                    System.out.println((String)key + ": " + (String)(tags.get(key)));
-                }System.out.println();
-            }*/
         }
+
+        /*if (wayTypeTag == null) {
+            for(Object key : tags.keySet()) {
+                System.out.println((String)key + ": " + (String)(tags.get(key)));
+            }System.out.println();
+        }*/
 
         return wayType;
     }

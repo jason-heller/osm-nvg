@@ -19,6 +19,7 @@ public class MapData {
 
         List<Way> wayList = ways.computeIfAbsent(layer, k -> new LinkedList<>());
 
+        // Binary sort into
         wayList.add(way);
     }
 
